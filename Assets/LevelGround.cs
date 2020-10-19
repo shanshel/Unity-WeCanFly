@@ -32,7 +32,7 @@ public class LevelGround : MonoBehaviour
             while (zPos < areaSize)
             {
                 var pos = new Vector3(xPos, 0f, zPos);
-                Instantiate(platform, pos, Quaternion.identity);
+                Instantiate(platform, pos, Quaternion.identity, transform);
                 zPos += Random.Range(minDistance, maxDistance);
             }
          

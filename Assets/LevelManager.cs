@@ -5,7 +5,7 @@ using UnityEngine;
 public class LevelManager : MonoBehaviour
 {
     [SerializeField]
-    GameObject platformPrefab;
+    Platform platformPrefab;
 
     [SerializeField]
     float startHeight = 200f, stepHeight = 5f, endHeight = 0f;
@@ -16,13 +16,18 @@ public class LevelManager : MonoBehaviour
     [SerializeField]
     int platformerCount,
         minPlatformsInDirection = 3, maxPlatformsInDirection = 7;
-    List<GameObject> platforms = new List<GameObject>();
+
+
+    [SerializeField]
+    Material[] targetSurfacesMaterials;
+    List<Platform> platforms = new List<Platform>();
     void Start()
     {
         bool negtiveDirection = false;
         bool isFlipped = false;
         int currentPlatInDirection = 0;
         int ranomChangeDirection = Random.Range(minPlatformsInDirection, maxPlatformsInDirection);
+        int matIndex = 0;
         for (int x = 0; x < platformerCount; x++)
         {
             var position = new Vector3(0f, startHeight, 0f);
@@ -58,8 +63,14 @@ public class LevelManager : MonoBehaviour
                 position.z += zRand;
             }
             var plat = Instantiate(platformPrefab, position, Quaternion.identity);
+            if (matIndex >= targetSurfacesMaterials.Length)
+                matIndex = 0;
+
+            plat.setTargetMaterial(targetSurfacesMaterials[matIndex]);
+
             platforms.Add(plat);
             currentPlatInDirection++;
+            matIndex++;
         }
     }
 

@@ -23,6 +23,12 @@ public class MainPlayer : MonoBehaviour
     //animations 
     [SerializeField]
     float fromJumpToInAirTime = .3f;
+
+    [SerializeField]
+    ParticleSystem hitPlatformParticle;
+
+    [SerializeField]
+    ParticleSystem fallInWaterVFXPrefab;
     private void Awake()
     {
         _rigid = GetComponent<Rigidbody>();
@@ -32,6 +38,7 @@ public class MainPlayer : MonoBehaviour
     Vector3 lastPos = Vector3.zero;
     private void FixedUpdate()
     {
+     
 
         var camEluer = mainCam.transform.rotation.eulerAngles;
         transform.rotation = Quaternion.Euler(0f, camEluer.y, 0f);
@@ -61,6 +68,7 @@ public class MainPlayer : MonoBehaviour
         }
 
 
+
         currentJumpTime -= Time.fixedDeltaTime;
         lastPos = transform.position;
     }
@@ -86,6 +94,7 @@ public class MainPlayer : MonoBehaviour
                 animSetBool("isReachedMaxHeight", false);
                 animSetBool("isTouchThePlatform", true);
                 animTrigger("Jump");
+                hitPlatformParticle.Play();
                 if (collidedPlatform.type == PlatformerType.Ground)
                 {
                 
@@ -99,6 +108,14 @@ public class MainPlayer : MonoBehaviour
           
    
         }
+        else if (collision.gameObject.layer == 10)
+        {
+            //Player Die
+
+            Instantiate(fallInWaterVFXPrefab, transform.position, Quaternion.identity);
+            gameObject.SetActive(false);
+        }
+
      
     }
 

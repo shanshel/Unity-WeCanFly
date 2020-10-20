@@ -5,7 +5,7 @@ using UnityEngine;
 public class LevelManager : MonoBehaviour
 {
     [SerializeField]
-    Platform platformPrefab;
+    Platform platformPrefab, platformFinalPrefab;
 
     [SerializeField]
     float startHeight = 200f, stepHeight = 5f, endHeight = 0f;
@@ -62,12 +62,28 @@ public class LevelManager : MonoBehaviour
                 position.x += xRand;
                 position.z += zRand;
             }
-            var plat = Instantiate(platformPrefab, position, Quaternion.identity);
+
+            Platform plat;
+
+            if (x+1 == platformerCount)
+            {
+                plat = Instantiate(platformFinalPrefab, position, Quaternion.identity);
+            }
+            else
+            {
+                plat = Instantiate(platformPrefab, position, Quaternion.identity);
+            }
+           
+    
             if (matIndex >= targetSurfacesMaterials.Length)
                 matIndex = 0;
 
+           
             plat.setTargetMaterial(targetSurfacesMaterials[matIndex]);
-
+            if (x != 0)
+            {
+                plat.applyFloatingAnimtion();
+            }
             platforms.Add(plat);
             currentPlatInDirection++;
             matIndex++;

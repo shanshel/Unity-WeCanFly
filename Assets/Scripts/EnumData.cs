@@ -8,7 +8,10 @@ namespace Assets.Scripts
 {
     public class EnumData
     {
-        public enum PlatformerType { Normal, Breakable, Ground};
+        public enum PlatformerType { Normal, Breakable, Ground, Final};
+        
+        public enum currentPlayerMoveStatus { Normal, BackJump, InAir}
+        public enum GameStatus { MainMenu, Preparing, GameStarted, Die}
 
        
 

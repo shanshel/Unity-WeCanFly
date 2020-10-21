@@ -408,6 +408,9 @@ MonoBehaviour:
   falseDetector: {fileID: 420123509}
   trueDetector: {fileID: 1332708049}
   circle: {fileID: 717876745}
+  yWhenPlayerInAir: 1
+  yWhenPlayerBackJump: 0.07
+  yNormal: 0
 --- !u!54 &1886340909
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -525,6 +528,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f77b4d375eb989d4c90663fb24e0e919, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentMove: 0
   animators:
   - {fileID: 6221866684802118388}
   - {fileID: 8111027738584205727}
@@ -532,14 +536,15 @@ MonoBehaviour:
   - {fileID: 8111027738962630821}
   mainCam: {fileID: 0}
   jumpSpeed: 10000
-  speed: 10
-  jumpDuration: 0.2
+  speed: 14
+  jumpDuration: 0.25
   fromJumpToInAirTime: 0.3
   hitPlatformParticle: {fileID: 1519996431095094206}
   hitPlatformUndergroundParticlePrefab: {fileID: 19800002, guid: 963efaa4b32ec5d4ea662970b246a35f, type: 3}
   fallInWaterVFXPrefab: {fileID: 19800000, guid: d441d3f90a8667a4bbc8a779107d022f, type: 3}
   onCameraPoint: {fileID: 1282458334}
   offCameraPoint: {fileID: 508449038}
+  groundDetector: {fileID: 1886340908}
 --- !u!1 &4828713542923543232
 GameObject:
   m_ObjectHideFlags: 0

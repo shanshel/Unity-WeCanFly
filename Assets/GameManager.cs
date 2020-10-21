@@ -9,8 +9,12 @@ public class GameManager : MonoBehaviour
     [HideInInspector]
     public GameStatus gameStatus = GameStatus.MainMenu;
 
-    public float gameTime, playingTime;
+    public float gameTime, playingTime, timeScaleTime;
 
+    [HideInInspector]
+    public int score;
+    [SerializeField]
+    Color ColorGoodJump, ColorLongJump, ColorPerfectJump, ColorPerfectLongJump;
     private void Awake()
     {
         _inst = this;
@@ -20,8 +24,14 @@ public class GameManager : MonoBehaviour
         if (gameStatus == GameStatus.GameStarted)
         {
             playingTime += Time.deltaTime;
+
+            if (timeScaleTime <= 0f)
+            {
+                Time.timeScale = 1f;
+            }
         }
 
+        timeScaleTime -= Time.deltaTime;
         gameTime += Time.deltaTime;
     }
 
@@ -34,4 +44,33 @@ public class GameManager : MonoBehaviour
         MainPlayer._inst.onGameStarted();
         MainCamera._inst.onGameStarted();
     }
+
+    public void applyTimeScaleEffect(float timeScale, float duration)
+    {
+        Time.timeScale = timeScale;
+        timeScaleTime = duration;
+
+    }
+
+    public void addScore(int _score, string textToShow, bool isSilent = false)
+    {
+        if (!isSilent)
+        {
+            Color color = ColorGoodJump;
+
+            if (_score == 1)
+                color = ColorGoodJump;
+            else if (_score == 2)
+                color = ColorLongJump;
+            else if (_score == 3)
+                color = ColorPerfectJump;
+            else if (_score == 4)
+                color = ColorPerfectLongJump;
+            UIManager._inst.showScoreEffect(textToShow, color);
+        }
+      
+        score += _score;
+    }
+
+   
 }

@@ -13,6 +13,8 @@ namespace Assets.Scripts
         public enum currentPlayerMoveStatus { Normal, BackJump, InAir}
         public enum GameStatus { MainMenu, Preparing, GameStarted, Die}
 
+        public enum JumpScoreType { Good, Long, Perfect, LongPerfect}
+
        
 
     }

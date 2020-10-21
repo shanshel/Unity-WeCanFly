@@ -37,6 +37,8 @@ public class MainPlayer : MonoBehaviour
     Transform onCameraPoint, offCameraPoint;
 
 
+    public PlayerGroundDetector groundDetector;
+
     Vector3 lastPos = Vector3.zero;
 
     //Character Selection Animation
@@ -44,6 +46,13 @@ public class MainPlayer : MonoBehaviour
     int animToPlay = 1;
     int currentSelectedCharacter = 0;
     bool isTransiningBetweenCharacters = false;
+
+
+    //Jump Score 
+    int lastJumpedPlatform = 0;
+    public ScorePoint scorePrefab;
+    [SerializeField]
+    ParticleSystem perfectScoreParticleSystem;
     private void Awake()
     {
         _inst = this;
@@ -194,16 +203,55 @@ public class MainPlayer : MonoBehaviour
         {
            
             Platform collidedPlatform = collision.gameObject.GetComponent<Platform>();
+     
+            if (!collidedPlatform.isJumped && collidedPlatform.type == PlatformerType.Normal)
+            {
+                //Score 
+                Vector3 detectorPos = groundDetector.transform.position;
+                Vector3 platCenterPos = collidedPlatform._centerPointHover.transform.position;
+
+                float distance = Vector2.Distance(new Vector2(detectorPos.x, detectorPos.z), new Vector2(platCenterPos.x, platCenterPos.z));
+
+                if (distance > .8f)
+                {
+                    
+                    if (collidedPlatform.platNumber - lastJumpedPlatform  > 1)
+                    {
+                        GameManager._inst.addScore(2, "Long Jump");
+                    }
+                    else
+                    {
+                        if (distance > 1.2f)
+                            GameManager._inst.addScore(1, "Good", true);
+                        else
+                            GameManager._inst.addScore(1, "Good");
+                    }
+                }
+                else
+                {
+                    GameManager._inst.applyTimeScaleEffect(.6f, .65f);
+                    if (collidedPlatform.platNumber - lastJumpedPlatform > 1)
+                    {
+                        GameManager._inst.addScore(4, "Wooow!");
+                        perfectScoreParticleSystem.Play();
+                    }
+                    else
+                    {
+                        GameManager._inst.addScore(3, "Perfect Jump");
+                        perfectScoreParticleSystem.Play();
+                    }
+                }
+            }
+            
+
             if (collidedPlatform != null)
             {
                 hitPlatform(collidedPlatform.type);
                 collidedPlatform.onHitPlayer();
                 Instantiate(hitPlatformUndergroundParticlePrefab, collidedPlatform.transform.position, Quaternion.identity);
-
-
             }
-          
-   
+
+            lastJumpedPlatform = collidedPlatform.platNumber;
         }
         else if (collision.gameObject.layer == 10)
         {
@@ -229,10 +277,15 @@ public class MainPlayer : MonoBehaviour
 
             currentJumpTime = jumpDuration * 3f;
         }
+        else if (platformType == PlatformerType.Final)
+        {
+            currentJumpTime = jumpDuration * 1000f;
+        }
         else
         {
             currentJumpTime = jumpDuration;
         }
+       
         Invoke("setPlayerMoveToInAir", .2f);
 
 

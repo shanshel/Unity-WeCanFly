@@ -25,7 +25,8 @@ public class Platform : MonoBehaviour
     [HideInInspector]
     public bool isJumped = false;
 
-    float angleToPrevPlat;
+    [HideInInspector]
+    public float angleToPrevPlat;
     Vector3 prevPlatPos;
     private void Start()
     {
@@ -132,12 +133,14 @@ public class Platform : MonoBehaviour
     {
         platNumber = pnumber;
         if (platNumber == 0) return;
-        PlatNumberText.text = platNumber.ToString();
+
+        PlatNumberText.text = ( ( (SharedData._inst.currentLevel - 1) * LevelManager._inst.platformPerLevel) +  platNumber).ToString() ;
 
     }
 
     public void setAngle(float angle)
     {
+
         angleToPrevPlat = angle;
     }
 
@@ -147,4 +150,10 @@ public class Platform : MonoBehaviour
         PlatNumberText.transform.parent.transform.LookAt(pos);
     }
 
+    void OnDestroy()
+    {
+        floatingTween.Kill();
+        pushDownTween.Kill();
+        centerHoverTween.Kill();
+    }
 }

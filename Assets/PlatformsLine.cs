@@ -8,7 +8,7 @@ public class PlatformsLine : MonoBehaviour
     public Transform point2;
     public Transform point3;
     public LineRenderer _lineRenderer;
-    int verixCount = 4;
+    int verixCount = 3;
 
    
     private void Update()

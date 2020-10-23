@@ -4,18 +4,20 @@ using UnityEngine;
 
 public class LevelManager : MonoBehaviour
 {
+    public static LevelManager _inst;
     [SerializeField]
     Platform platformPrefab, platformFinalPrefab;
 
+    float startHeight = 200f;
     [SerializeField]
-    float startHeight = 200f, stepHeight = 5f;
+    float stepHeight = 5f;
 
     [SerializeField]
     int minDistance = 10, maxDistance = 15;
 
+    int platformerCount = 5;
     [SerializeField]
-    int platformerCount,
-        minPlatformsInDirection = 3, maxPlatformsInDirection = 7;
+    int minPlatformsInDirection = 3, maxPlatformsInDirection = 7;
 
 
     [SerializeField]
@@ -26,11 +28,39 @@ public class LevelManager : MonoBehaviour
     [SerializeField]
     Material[] targetSurfacesMaterials;
     List<Platform> platforms = new List<Platform>();
-
+   
     [SerializeField]
     PlatformsLine PlatLineRenderer;
+
+    [SerializeField]
+    bool isStairUp = false;
+
+    //Env Extender 
+    float lastExtendTime = 0f;
+    [SerializeField]
+    GameObject envContainerObject;
+    //level logic 
+ 
+    public int platformPerLevel = 5, maxPlatforms = 100;
+
+    private void Awake()
+    {
+        _inst = this;
+    }
     void Start()
     {
+        //Calc PlatCount 
+        platformerCount = (SharedData._inst.currentLevel * platformPerLevel);
+        if (platformerCount > maxPlatforms)
+        {
+            platformerCount = maxPlatforms;
+        }
+
+        //Calc Start Height
+        startHeight = platformerCount * (stepHeight * .8f);
+        if (isStairUp)
+            startHeight = 10f;
+        MainPlayer._inst.setPlayerHeightPos(startHeight + 5f);
         //spawn first piece 
         Platform plat;
         int matIndex = 0;
@@ -68,6 +98,8 @@ public class LevelManager : MonoBehaviour
             
             Vector3 newPos = platforms[x - 1].transform.position;
             float yValue = -stepHeight;
+            if (isStairUp)
+                yValue = stepHeight;
             if (Random.Range(0, 11) > (10 - sameHeightChacne))
                 yValue = 0;
 
@@ -131,6 +163,28 @@ public class LevelManager : MonoBehaviour
 
         // return the vector info
         return _returnVector;
+    }
+
+    
+    public void extendEnv()
+    {
+        if (lastExtendTime < Time.time)
+        {
+            lastExtendTime = Time.time + 1f;
+            envContainerObject.transform.localScale *= 1.5f;
+        }
+    }
+
+    public float getAngleForTheNextPlatform()
+    {
+        var comingPlat = platforms[MainPlayer._inst.lastJumpedPlatform + 1];
+        return comingPlat.angleToPrevPlat;
+    }
+
+    public Vector3 getNextPlatformPos()
+    {
+        var comingPlat = platforms[MainPlayer._inst.lastJumpedPlatform + 1];
+        return comingPlat.transform.position;
     }
 
 }

@@ -8,7 +8,7 @@ public class GameManager : MonoBehaviour
     public static GameManager _inst;
     [HideInInspector]
     public GameStatus gameStatus = GameStatus.MainMenu;
-
+    public bool isAboutToFinish = false;
     public float gameTime, playingTime, timeScaleTime;
 
     [HideInInspector]
@@ -18,6 +18,24 @@ public class GameManager : MonoBehaviour
     private void Awake()
     {
         _inst = this;
+        
+        if (Screen.currentResolution.refreshRate < 40)
+        {
+            Application.targetFrameRate = 30;
+        }
+        else if (Screen.currentResolution.refreshRate < 75)
+        {
+            Application.targetFrameRate = 60;
+        }
+        else
+        {
+            Application.targetFrameRate = 120;
+        }
+    }
+
+    private void Start()
+    {
+        SoundManager._inst.playMusic(SoundEnum.MainMenuMusic);
     }
     private void Update()
     {
@@ -43,6 +61,7 @@ public class GameManager : MonoBehaviour
         UIManager._inst.onGameStarted();
         MainPlayer._inst.onGameStarted();
         MainCamera._inst.onGameStarted();
+        SoundManager._inst.playMusic(SoundEnum.GameplayMusic);
     }
 
     public void applyTimeScaleEffect(float timeScale, float duration)
@@ -72,5 +91,33 @@ public class GameManager : MonoBehaviour
         score += _score;
     }
 
+    public void killPlayer(float showScreenAfter = 1f)
+    {
+        gameStatus = GameStatus.Die;
+        Invoke("sendShowDeathScreenToUI", showScreenAfter);
+       
+    }
+    void sendShowDeathScreenToUI()
+    {
+        UIManager._inst.showDeathScreen();
+    }
    
+
+    public void finishLevel(float finishAfter = 2.5f)
+    {
+        isAboutToFinish = true;
+        SharedData._inst.currentLevel = SharedData._inst.currentLevel + 1;
+        Invoke("sendShowWinScreenToUI", finishAfter);
+    }
+    void sendShowWinScreenToUI()
+    {
+        gameStatus = GameStatus.Finished;
+        
+        MainPlayer._inst._rigid.isKinematic = true;
+        MainCamera._inst.onGameFinished();
+        SoundManager._inst.playSoundOnce(SoundEnum.WinSFX2);
+        UIManager._inst.showFinishScreen();
+  
+    }
+
 }

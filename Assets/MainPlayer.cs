@@ -9,7 +9,8 @@ public class MainPlayer : MonoBehaviour
 {
 
     public static MainPlayer _inst;
-    Rigidbody _rigid;
+    [HideInInspector]
+    public Rigidbody _rigid;
 
     [HideInInspector]
     public currentPlayerMoveStatus currentMove = currentPlayerMoveStatus.Normal;
@@ -49,10 +50,19 @@ public class MainPlayer : MonoBehaviour
 
 
     //Jump Score 
-    int lastJumpedPlatform = 0;
+    [HideInInspector]
+    public int lastJumpedPlatform = 0;
     public ScorePoint scorePrefab;
     [SerializeField]
     ParticleSystem perfectScoreParticleSystem;
+
+
+    //Finish Game 
+    [SerializeField]
+    ParticleSystem finishGameParticle;
+
+    //Wind Control 
+    public float windPower = 1f;
     private void Awake()
     {
         _inst = this;
@@ -81,20 +91,27 @@ public class MainPlayer : MonoBehaviour
             {
                 
                 _rigid.AddForce(Vector3.up * Time.deltaTime * jumpSpeed);
-                
+                if (!GameManager._inst.isAboutToFinish)
+                    SoundManager._inst.setWindProps(.2f * windPower, .007f * windPower);
             }
             else
             {
                 if (lastPos.y > transform.position.y)
                 {
+
                     animSetBool("isTouchThePlatform", false);
                     animSetBool("isReachedMaxHeight", true);
+                    _rigid.detectCollisions = true;
                     currentMove = currentPlayerMoveStatus.BackJump;
+                    if (!GameManager._inst.isAboutToFinish)
+                        SoundManager._inst.setWindProps(.4f * windPower, .01f * windPower);
+
                 }
+               
             }
 
 
-            if (Input.GetMouseButton(1))
+            if (Input.GetMouseButton(0))
             {
                 _rigid.position = _rigid.position + transform.forward * Time.fixedDeltaTime * speed;
             }
@@ -184,9 +201,12 @@ public class MainPlayer : MonoBehaviour
     public void onGameStarted()
     {
         characterRenderUpdate();
+        playAnimationInt(0);
         animators[currentSelectedCharacter].transform.DOLocalRotate(offCameraPoint.rotation.eulerAngles, .3f).Play().OnComplete(() => {
             hitPlatform(PlatformerType.Normal);
         });
+         
+  
         
         
         
@@ -201,11 +221,13 @@ public class MainPlayer : MonoBehaviour
 
         if (collision.gameObject.layer == 8)
         {
-           
+
+            
             Platform collidedPlatform = collision.gameObject.GetComponent<Platform>();
      
             if (!collidedPlatform.isJumped && collidedPlatform.type == PlatformerType.Normal)
             {
+                SoundManager._inst.setWindProps();
                 //Score 
                 Vector3 detectorPos = groundDetector.transform.position;
                 Vector3 platCenterPos = collidedPlatform._centerPointHover.transform.position;
@@ -218,13 +240,22 @@ public class MainPlayer : MonoBehaviour
                     if (collidedPlatform.platNumber - lastJumpedPlatform  > 1)
                     {
                         GameManager._inst.addScore(2, "Long Jump");
+                        SoundManager._inst.playSoundOnce(SoundEnum.LongJumpSFX);
                     }
                     else
                     {
                         if (distance > 1.2f)
+                        {
                             GameManager._inst.addScore(1, "Good", true);
+                           
+                        }
                         else
+                        {
                             GameManager._inst.addScore(1, "Good");
+                            SoundManager._inst.playSoundOnce(SoundEnum.GoodJumpSfx);
+
+                        }
+
                     }
                 }
                 else
@@ -233,12 +264,16 @@ public class MainPlayer : MonoBehaviour
                     if (collidedPlatform.platNumber - lastJumpedPlatform > 1)
                     {
                         GameManager._inst.addScore(4, "Wooow!");
+                        SoundManager._inst.playSoundOnce(SoundEnum.WowJumpSFX);
                         perfectScoreParticleSystem.Play();
                     }
                     else
                     {
                         GameManager._inst.addScore(3, "Perfect Jump");
+
                         perfectScoreParticleSystem.Play();
+                        SoundManager._inst.playSoundOnce(SoundEnum.PerfectJumpSFX);
+
                     }
                 }
             }
@@ -248,17 +283,25 @@ public class MainPlayer : MonoBehaviour
             {
                 hitPlatform(collidedPlatform.type);
                 collidedPlatform.onHitPlayer();
+                if (collidedPlatform.isJumped && lastJumpedPlatform == collidedPlatform.platNumber)
+                {
+                    MainCamera._inst.lookAtNextPlatform();
+                }
                 Instantiate(hitPlatformUndergroundParticlePrefab, collidedPlatform.transform.position, Quaternion.identity);
             }
-
+            SoundManager._inst.playSoundOnce(SoundEnum.JumpSFX);
             lastJumpedPlatform = collidedPlatform.platNumber;
+            _rigid.detectCollisions = false;
         }
         else if (collision.gameObject.layer == 10)
         {
             //Player Die
-
+            SoundManager._inst.playSoundOnce(SoundEnum.DieInWaterSFX);
             Instantiate(fallInWaterVFXPrefab, transform.position, Quaternion.identity);
+            GameManager._inst.killPlayer();
             gameObject.SetActive(false);
+            SoundManager._inst.setWindProps();
+
         }
 
      
@@ -280,6 +323,7 @@ public class MainPlayer : MonoBehaviour
         else if (platformType == PlatformerType.Final)
         {
             currentJumpTime = jumpDuration * 1000f;
+            jumpSpeed *= 2f; 
         }
         else
         {
@@ -288,7 +332,14 @@ public class MainPlayer : MonoBehaviour
        
         Invoke("setPlayerMoveToInAir", .2f);
 
+        if (platformType == PlatformerType.Final)
+        {
+            GameManager._inst.finishLevel();
+            finishGameParticle.Play();
+            SoundManager._inst.playSoundOnce(SoundEnum.WinSFX);
+            SoundManager._inst.setWindProps(.7f * windPower, .02f * windPower);
 
+        }
     }
     void setPlayerMoveToInAir()
     {
@@ -332,6 +383,11 @@ public class MainPlayer : MonoBehaviour
         }
     }
 
+
+    public void setPlayerHeightPos(float height)
+    {
+        transform.position = new Vector3(transform.position.x, height, transform.position.z);
+    }
 
 
 

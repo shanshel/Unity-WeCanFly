@@ -11,10 +11,26 @@ namespace Assets.Scripts
         public enum PlatformerType { Normal, Breakable, Ground, Final};
         
         public enum currentPlayerMoveStatus { Normal, BackJump, InAir}
-        public enum GameStatus { MainMenu, Preparing, GameStarted, Die}
+        public enum GameStatus { MainMenu, Preparing, GameStarted, Die, Finished}
 
         public enum JumpScoreType { Good, Long, Perfect, LongPerfect}
 
+        public enum SoundEnum { 
+            JumpSFX, 
+            GoodJumpSfx, 
+            PerfectJumpSFX, 
+            LongJumpSFX, 
+            WowJumpSFX, 
+            DieInWaterSFX, 
+            WinSFX,
+            WinSFX2,
+            MainMenuMusic,
+            GameplayMusic,
+            UIClickSFX,
+            UIHeavyClickSFX,
+        }
+
+       
        
 
     }
